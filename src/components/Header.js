@@ -81,15 +81,6 @@ const Header = () => {
             </li>
             <li>
               <Link
-                to="/rooms"
-                className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
-                onClick={() => setMenuOpen(false)}
-              >
-                Habitaciones
-              </Link>
-            </li>
-            <li>
-              <Link
                 to="/events"
                 className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
                 onClick={() => setMenuOpen(false)}

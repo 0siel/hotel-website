@@ -35,7 +35,7 @@ const Rooms = () => {
       <Header />
       <section className="bg-white py-8">
         <h2 className="text-3xl text-green font-bold text-center mb-6">
-          Available Rooms
+          Habitaciones
         </h2>
         <div className="overflow-x-auto whitespace-nowrap">
           <div className="flex gap-6 px-4">

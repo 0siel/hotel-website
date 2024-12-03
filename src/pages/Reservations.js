@@ -8,9 +8,10 @@ const Reservations = () => {
   const [formData, setFormData] = useState({
     check_in: "",
     check_out: "",
-    nights: 1,
   });
+  const [totalPrice, setTotalPrice] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     // Redirect to Rooms page if no room data is passed
@@ -33,6 +34,26 @@ const Reservations = () => {
     }
   }, [state, navigate]);
 
+  useEffect(() => {
+    // Calculate total price based on check-in and check-out
+    if (formData.check_in && formData.check_out && roomDetails) {
+      const checkInDate = new Date(formData.check_in);
+      const checkOutDate = new Date(formData.check_out);
+      const diffTime = checkOutDate - checkInDate;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Validate duration
+      if (diffDays > 3) {
+        setErrorMessage("No se permiten reservaciones de más de 3 días.");
+        setTotalPrice(0); // Reset total price
+      } else {
+        setErrorMessage(""); // Clear error message
+        const calculatedPrice = diffDays * roomDetails.price_per_night;
+        setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
+      }
+    }
+  }, [formData, roomDetails]);
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -40,6 +61,10 @@ const Reservations = () => {
 
   const handleReserve = (e) => {
     e.preventDefault();
+    if (errorMessage) {
+      alert("Corrija los errores antes de continuar.");
+      return;
+    }
     setShowConfirmation(true); // Show confirmation modal
   };
 
@@ -116,6 +141,12 @@ const Reservations = () => {
                 required
               />
             </div>
+            {errorMessage && (
+              <p className="text-red-600 mb-4 font-semibold">{errorMessage}</p>
+            )}
+            <p className="text-gray-700 mb-4">
+              <strong>Precio total:</strong> ${totalPrice.toFixed(2)}
+            </p>
             <button
               type="submit"
               className="bg-green text-white px-4 py-2 rounded hover:bg-green-700"
@@ -142,10 +173,7 @@ const Reservations = () => {
               <strong>{roomDetails.name}</strong> del{" "}
               <strong>{formData.check_in}</strong> al{" "}
               <strong>{formData.check_out}</strong> por un total de{" "}
-              <strong>
-                ${(roomDetails.price_per_night * formData.nights).toFixed(2)}
-              </strong>
-              ?
+              <strong>${totalPrice.toFixed(2)}</strong>?
             </p>
             <div className="flex justify-end gap-4">
               <button
