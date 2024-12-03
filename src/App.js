@@ -6,6 +6,7 @@ import Events from "./pages/Events"; // Placeholder
 import Login from "./pages/Login"; // Placeholder
 import Reservations from "./pages/Reservations"; // Placeholder
 import "./index.css"; // This assumes your styles are in src/index.css
+import ReservationDetail from "./components/ReservationDetail";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/events" element={<Events />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reservations" element={<Reservations />} />
+          <Route path="/reservation-detail/" element={<ReservationDetail />} />
         </Routes>
       </div>
     </Router>

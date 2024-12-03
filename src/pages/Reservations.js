@@ -13,6 +13,8 @@ const Reservations = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const user_data = JSON.parse(localStorage.getItem("userData"));
+
   useEffect(() => {
     // Redirect to Rooms page if no room data is passed
     if (!state?.roomId) {
@@ -44,7 +46,9 @@ const Reservations = () => {
 
       // Validate reservation duration (max 3 days) and calculate total price
       if (diffDays > 3) {
-        setErrorMessage("No se permiten reservaciones de más de 3 días.");
+        setErrorMessage(
+          "Ponganse en contacto con el hotel para reservar más de 3 días: 552 564 4492"
+        );
         setTotalPrice(0); // Reset total price
       } else {
         if (diffDays < 1) {
@@ -75,9 +79,23 @@ const Reservations = () => {
   };
 
   const confirmReservation = () => {
-    // Place reservation logic here
-    console.log("Reservación confirmada:", roomDetails);
-    setShowConfirmation(false); // Hide confirmation modal
+    const reservationDetails = {
+      id: 1, // Replace with actual reservation ID
+      room_name: roomDetails.name,
+      room_id: roomDetails.id,
+      user_id: user_data.id,
+      user_name: user_data.name,
+      user_email: user_data.email,
+      user_phone: user_data.phone_number,
+      check_in: formData.check_in,
+      check_out: formData.check_out,
+      price: totalPrice,
+    };
+
+    // Navigate to ReservationDetail component with reservation details
+    navigate("/reservation-detail", {
+      state: { reservation: reservationDetails },
+    });
   };
 
   return (
