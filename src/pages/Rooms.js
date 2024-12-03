@@ -10,7 +10,9 @@ const Rooms = () => {
     // Fetch rooms from the API
     const fetchRooms = async () => {
       try {
-        const response = await fetch("http://3.93.234.131/api/rooms/");
+        const response = await fetch(
+          "https://www.api.sanfelipe-hotel.com/api/rooms/"
+        );
         const data = await response.json();
         setRooms(data);
       } catch (error) {

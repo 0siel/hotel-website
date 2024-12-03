@@ -8,7 +8,9 @@ const Events = () => {
     // Fetch events from the API
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://3.93.234.131/api/events/");
+        const response = await fetch(
+          "https://www.api.sanfelipe-hotel.com/api/events/"
+        );
         const data = await response.json();
         setEvents(data);
       } catch (error) {
