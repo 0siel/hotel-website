@@ -1,11 +1,26 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if auth token exists in localStorage
+    const token = localStorage.getItem("authToken");
+    setIsLoggedIn(!!token); // Set to true if token exists
+  }, []);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const handleLogout = () => {
+    // Remove auth token and update state
+    localStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    navigate("/login"); // Redirect to login page after logout
   };
 
   return (
@@ -70,7 +85,7 @@ const Header = () => {
                 className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
                 onClick={() => setMenuOpen(false)}
               >
-                Rooms
+                Habitaciones
               </Link>
             </li>
             <li>
@@ -79,27 +94,39 @@ const Header = () => {
                 className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
                 onClick={() => setMenuOpen(false)}
               >
-                Events
+                Eventos
               </Link>
             </li>
-            <li>
-              <Link
-                to="/login"
-                className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
-                onClick={() => setMenuOpen(false)}
-              >
-                Login
-              </Link>
-            </li>
+
             <li>
               <Link
                 to="/reservations"
                 className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
                 onClick={() => setMenuOpen(false)}
               >
-                Reservations
+                Reservar
               </Link>
             </li>
+            {!isLoggedIn ? (
+              <li>
+                <Link
+                  to="/login"
+                  className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Ingresar
+                </Link>
+              </li>
+            ) : (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
+                >
+                  Salir
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
       </div>
