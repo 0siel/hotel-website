@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "../components/Header";
 import Welcome from "../components/Welcome";
-import Events from "./Events";
+import EventsComponent from "../components/EventsComponent";
 import Rooms from "./Rooms";
 import Footer from "../components/Footer";
 
@@ -15,7 +15,7 @@ const Home = () => {
         {/* Rooms Section */}
         <Rooms />
         {/* Events Section */}
-        <Events />
+        <EventsComponent />
       </main>
       <Footer />
     </div>
