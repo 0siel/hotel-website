@@ -64,8 +64,11 @@ const Login = () => {
 
       if (isLogin) {
         setMessage("Inicio de sesión exitoso. Redirigiendo...");
-        console.log("JWT Token:", data.access_token); // Save or use the token as needed
+        console.log("JWT Token:", data.access_token);
+        // Save or use the token as needed
+        localStorage.setItem("authToken", data.access_token);
         setTimeout(() => {
+          // Redirect to the reservations page
           navigate("/reservations");
         }, 1500); // Redirect after 1.5 seconds
       } else {
