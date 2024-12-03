@@ -66,7 +66,15 @@ const Rooms = () => {
                     <span className="font-bold"></span> {room.square_meters} m²
                   </p>
                   <button
-                    onClick={() => navigate("/reservations")}
+                    onClick={() =>
+                      navigate("/reservations", {
+                        state: {
+                          roomId: room.id,
+                          roomName: room.name,
+                          pricePerNight: room.price_per_night,
+                        },
+                      })
+                    }
                     className="mt-4 bg-gold text-white px-4 py-2 rounded-md hover:bg-white hover:text-gold transition"
                   >
                     Reservar

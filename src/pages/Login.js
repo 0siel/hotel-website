@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and registration
@@ -9,7 +10,9 @@ const Login = () => {
     phone_number: "",
     password: "",
   });
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(
+    "Inicia sesión o regístrate para continuar."
+  );
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -64,12 +67,14 @@ const Login = () => {
 
       if (isLogin) {
         setMessage("Inicio de sesión exitoso. Redirigiendo...");
-        console.log("JWT Token:", data.access_token);
+        console.log("JWT Token:", data.token);
         // Save or use the token as needed
-        localStorage.setItem("authToken", data.access_token);
+        localStorage.setItem("authToken", data.token);
+        //Dave user data
+        localStorage.setItem("userData", JSON.stringify(data.user));
         setTimeout(() => {
           // Redirect to the reservations page
-          navigate("/reservations");
+          navigate("/");
         }, 1500); // Redirect after 1.5 seconds
       } else {
         setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
@@ -83,88 +88,91 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
-      <div className="flex justify-between mb-6">
-        <button
-          className={`px-4 py-2 font-bold ${
-            isLogin ? "bg-green text-white" : "bg-gray-200"
-          } rounded-l-lg`}
-          onClick={toggleForm}
-        >
-          Iniciar Sesión
-        </button>
-        <button
-          className={`px-4 py-2 font-bold ${
-            !isLogin ? "bg-green text-white" : "bg-gray-200"
-          } rounded-r-lg`}
-          onClick={toggleForm}
-        >
-          Registrarse
-        </button>
+    <div>
+      <Header />
+      <div className="max-w-md mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
+        <div className="flex justify-between mb-6">
+          <button
+            className={`px-4 py-2 font-bold ${
+              isLogin ? "bg-green text-white" : "bg-gray-200"
+            } rounded-l-lg`}
+            onClick={toggleForm}
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            className={`px-4 py-2 font-bold ${
+              !isLogin ? "bg-green text-white" : "bg-gray-200"
+            } rounded-r-lg`}
+            onClick={toggleForm}
+          >
+            Registrarse
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <>
+              <div className="mb-4">
+                <label className="block text-gray-700">Nombre</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Teléfono</label>
+                <input
+                  type="text"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          <div className="mb-4">
+            <label className="block text-gray-700">Correo Electrónico</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700">Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-green text-white py-2 rounded"
+          >
+            {isLogin ? "Iniciar Sesión" : "Registrarse"}
+          </button>
+        </form>
+
+        {message && <p className="mt-4 text-green-600">{message}</p>}
+        {error && <p className="mt-4 text-red-600">{error}</p>}
       </div>
-
-      <form onSubmit={handleSubmit}>
-        {!isLogin && (
-          <>
-            <div className="mb-4">
-              <label className="block text-gray-700">Nombre</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">Teléfono</label>
-              <input
-                type="text"
-                name="phone_number"
-                value={formData.phone_number}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
-            </div>
-          </>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Correo Electrónico</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Contraseña</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-green text-white py-2 rounded"
-        >
-          {isLogin ? "Iniciar Sesión" : "Registrarse"}
-        </button>
-      </form>
-
-      {message && <p className="mt-4 text-green-600">{message}</p>}
-      {error && <p className="mt-4 text-red-600">{error}</p>}
     </div>
   );
 };

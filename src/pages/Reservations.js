@@ -1,22 +1,169 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Reservations = () => {
+  const { state } = useLocation(); // Access room data passed via navigate
   const navigate = useNavigate();
+  const [roomDetails, setRoomDetails] = useState(null);
+  const [formData, setFormData] = useState({
+    check_in: "",
+    check_out: "",
+    nights: 1,
+  });
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
-    // Check for the auth token
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      // Redirect to login if no token is found
-      navigate("/login");
+    // Redirect to Rooms page if no room data is passed
+    if (!state?.roomId) {
+      navigate("/rooms");
+    } else {
+      // Fetch detailed room data
+      const fetchRoomDetails = async () => {
+        try {
+          const response = await fetch(
+            `https://www.api.sanfelipe-hotel.com/api/rooms/${state.roomId}`
+          );
+          const data = await response.json();
+          setRoomDetails(data);
+        } catch (error) {
+          console.error("Error fetching room details:", error);
+        }
+      };
+      fetchRoomDetails();
     }
-  }, [navigate]);
+  }, [state, navigate]);
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleReserve = (e) => {
+    e.preventDefault();
+    setShowConfirmation(true); // Show confirmation modal
+  };
+
+  const confirmReservation = () => {
+    // Place reservation logic here
+    console.log("Reservación confirmada:", roomDetails);
+    setShowConfirmation(false); // Hide confirmation modal
+  };
 
   return (
-    <div className="text-center py-20">
-      <h1 className="text-4xl font-bold">Reservations Page</h1>
-      <p>Booking functionality will go here.</p>
+    <div className="container mx-auto p-6">
+      <h1 className="text-4xl font-bold text-center mb-6">Reservación</h1>
+      {roomDetails ? (
+        <>
+          {/* Room Card */}
+          <div className="p-4 border rounded-lg bg-gray-100 mb-6">
+            <h2 className="text-2xl font-bold mb-4">{roomDetails.name}</h2>
+            <p className="text-gray-700 mb-2">
+              <strong>Descripción:</strong> {roomDetails.description}
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Precio por noche:</strong> $
+              {roomDetails.price_per_night.toFixed(2)}
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Metros cuadrados:</strong> {roomDetails.square_meters} m²
+            </p>
+            <p className="text-gray-700 mb-4">
+              <strong>ID de Habitación:</strong> {roomDetails.id}
+            </p>
+            <div className="flex gap-4 overflow-x-auto mb-4">
+              {roomDetails.images_list.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Imagen ${index + 1} de ${roomDetails.name}`}
+                  className="w-48 h-32 object-cover rounded-lg shadow-md flex-shrink-0"
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => navigate("/rooms")}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+            >
+              Cambiar Habitación
+            </button>
+          </div>
+
+          {/* Reservation Form */}
+          <form
+            onSubmit={handleReserve}
+            className="p-4 border rounded-lg bg-white"
+          >
+            <h2 className="text-2xl font-bold mb-4">Detalles de la Reserva</h2>
+            <div className="mb-4">
+              <label className="block font-bold">Check-in</label>
+              <input
+                type="date"
+                name="check_in"
+                value={formData.check_in}
+                onChange={handleFormChange}
+                className="w-full border rounded p-2"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block font-bold">Check-out</label>
+              <input
+                type="date"
+                name="check_out"
+                value={formData.check_out}
+                onChange={handleFormChange}
+                className="w-full border rounded p-2"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-green text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Reservar
+            </button>
+          </form>
+        </>
+      ) : (
+        <p className="text-center text-gray-500">
+          Cargando detalles de la habitación...
+        </p>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">
+              Confirmación de Reservación
+            </h2>
+            <p className="mb-4">
+              ¿Está seguro de que desea reservar la habitación{" "}
+              <strong>{roomDetails.name}</strong> del{" "}
+              <strong>{formData.check_in}</strong> al{" "}
+              <strong>{formData.check_out}</strong> por un total de{" "}
+              <strong>
+                ${(roomDetails.price_per_night * formData.nights).toFixed(2)}
+              </strong>
+              ?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowConfirmation(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmReservation}
+                className="bg-green text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
