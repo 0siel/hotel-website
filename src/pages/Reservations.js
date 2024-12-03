@@ -42,14 +42,20 @@ const Reservations = () => {
       const diffTime = checkOutDate - checkInDate;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      // Validate duration
+      // Validate reservation duration (max 3 days) and calculate total price
       if (diffDays > 3) {
         setErrorMessage("No se permiten reservaciones de más de 3 días.");
         setTotalPrice(0); // Reset total price
       } else {
-        setErrorMessage(""); // Clear error message
-        const calculatedPrice = diffDays * roomDetails.price_per_night;
-        setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
+        if (diffDays < 1) {
+          setErrorMessage(
+            "La fecha de check-out debe ser posterior al check-in."
+          );
+        } else {
+          setErrorMessage(""); // Clear error message
+          const calculatedPrice = diffDays * roomDetails.price_per_night;
+          setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
+        }
       }
     }
   }, [formData, roomDetails]);
