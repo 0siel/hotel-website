@@ -76,7 +76,7 @@ const Header = () => {
                 className="block py-2 px-4 text-center hover:text-a79c69 transition duration-200"
                 onClick={() => setMenuOpen(false)}
               >
-                Home
+                Inicio
               </Link>
             </li>
             <li>

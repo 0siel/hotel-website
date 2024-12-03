@@ -33,8 +33,9 @@ const Welcome = () => {
       {/* Hotel Name and Slogan */}
       <div className="py-6 sm:py-12 text-white">
         <h1 className="text-3xl sm:text-5xl font-bold mb-4">San Felipe</h1>
+        {/* Slogan in italic */}
         <p className="text-base sm:text-lg mb-8">
-          Tenemos una habitación para ti
+          "Tenemos una habitación para ti"
         </p>
       </div>
 
