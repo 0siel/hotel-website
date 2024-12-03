@@ -37,29 +37,35 @@ const Reservations = () => {
   }, [state, navigate]);
 
   useEffect(() => {
-    // Calculate total price based on check-in and check-out
     if (formData.check_in && formData.check_out && roomDetails) {
+      const currentDate = new Date(); // Today's date
       const checkInDate = new Date(formData.check_in);
       const checkOutDate = new Date(formData.check_out);
       const diffTime = checkOutDate - checkInDate;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      // Validate reservation duration (max 3 days) and calculate total price
+      // Validate check-in date is not in the past
+      if (checkInDate < currentDate.setHours(0, 0, 0, 0)) {
+        setErrorMessage("La fecha de check-in no puede estar en el pasado.");
+        setTotalPrice(0); // Reset total price
+        return;
+      }
+
+      // Validate reservation duration (max 3 days)
       if (diffDays > 3) {
         setErrorMessage(
           "Ponganse en contacto con el hotel para reservar más de 3 días: 552 564 4492"
         );
         setTotalPrice(0); // Reset total price
+      } else if (diffDays < 1) {
+        setErrorMessage(
+          "La fecha de check-out debe ser posterior al check-in."
+        );
+        setTotalPrice(0); // Reset total price
       } else {
-        if (diffDays < 1) {
-          setErrorMessage(
-            "La fecha de check-out debe ser posterior al check-in."
-          );
-        } else {
-          setErrorMessage(""); // Clear error message
-          const calculatedPrice = diffDays * roomDetails.price_per_night;
-          setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
-        }
+        setErrorMessage(""); // Clear error message
+        const calculatedPrice = diffDays * roomDetails.price_per_night;
+        setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
       }
     }
   }, [formData, roomDetails]);
