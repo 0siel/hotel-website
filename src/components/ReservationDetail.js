@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { jsPDF } from "jspdf";
+//import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
+import { jsPDF } from "jspdf";
 
 const ReservationDetail = () => {
   const { state } = useLocation(); // Reservation details passed via navigate
@@ -20,6 +21,7 @@ const ReservationDetail = () => {
   const printPDF = async () => {
     if (!reservation) return;
 
+    // Create a new PDF document
     const doc = new jsPDF();
 
     // Generate QR Code with reservation details
