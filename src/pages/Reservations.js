@@ -9,6 +9,7 @@ const Reservations = () => {
     check_in: "",
     check_out: "",
   });
+  const [reservations, setReservations] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -25,19 +26,30 @@ const Reservations = () => {
     if (!state?.roomId) {
       navigate("/rooms");
     } else {
-      // Fetch detailed room data
-      const fetchRoomDetails = async () => {
+      // Fetch detailed room data and reservations
+      const fetchRoomData = async () => {
         try {
-          const response = await fetch(
-            `https://www.api.sanfelipe-hotel.com/api/rooms/${state.roomId}`
+          const [roomResponse, reservationsResponse] = await Promise.all([
+            fetch(
+              `https://www.api.sanfelipe-hotel.com/api/rooms/${state.roomId}`
+            ),
+            fetch("https://www.api.sanfelipe-hotel.com/api/reservations/"),
+          ]);
+
+          const roomData = await roomResponse.json();
+          const reservationsData = await reservationsResponse.json();
+
+          setRoomDetails(roomData);
+          setReservations(
+            reservationsData.filter(
+              (res) => res.room_id === state.roomId // Only reservations for this room
+            )
           );
-          const data = await response.json();
-          setRoomDetails(data);
         } catch (error) {
-          console.error("Error fetching room details:", error);
+          console.error("Error fetching data:", error);
         }
       };
-      fetchRoomDetails();
+      fetchRoomData();
     }
   }, [state, navigate]);
 
@@ -62,18 +74,40 @@ const Reservations = () => {
           "Ponganse en contacto con el hotel para reservar más de 3 días: 552 564 4492"
         );
         setTotalPrice(0); // Reset total price
+        return;
       } else if (diffDays < 1) {
         setErrorMessage(
           "La fecha de check-out debe ser posterior al check-in."
         );
         setTotalPrice(0); // Reset total price
-      } else {
-        setErrorMessage(""); // Clear error message
-        const calculatedPrice = diffDays * roomDetails.price_per_night;
-        setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
+        return;
       }
+
+      // Check for overlapping reservations
+      const hasOverlap = reservations.some((res) => {
+        const existingCheckIn = new Date(res.check_in);
+        const existingCheckOut = new Date(res.check_out);
+        return (
+          (checkInDate >= existingCheckIn && checkInDate < existingCheckOut) ||
+          (checkOutDate > existingCheckIn &&
+            checkOutDate <= existingCheckOut) ||
+          (checkInDate <= existingCheckIn && checkOutDate >= existingCheckOut)
+        );
+      });
+
+      if (hasOverlap) {
+        setErrorMessage(
+          "Las fechas seleccionadas no están disponibles para esta habitación."
+        );
+        setTotalPrice(0); // Reset total price
+        return;
+      }
+
+      setErrorMessage(""); // Clear error message
+      const calculatedPrice = diffDays * roomDetails.price_per_night;
+      setTotalPrice(calculatedPrice > 0 ? calculatedPrice : 0);
     }
-  }, [formData, roomDetails]);
+  }, [formData, roomDetails, reservations]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -89,24 +123,65 @@ const Reservations = () => {
     setShowConfirmation(true); // Show confirmation modal
   };
 
-  const confirmReservation = () => {
+  const confirmReservation = async () => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate("/login"); // Ensure token is still present
+      return;
+    }
+
+    // Prepare reservation details to send
     const reservationDetails = {
-      id: 1, // Replace with actual reservation ID
-      room_name: roomDetails.name,
       room_id: roomDetails.id,
-      user_id: user_data.id,
-      user_name: user_data.name,
-      user_email: user_data.email,
-      user_phone: user_data.phone_number,
+      customer_id: user_data.id,
       check_in: formData.check_in,
       check_out: formData.check_out,
+      nights: Math.ceil(
+        (new Date(formData.check_out) - new Date(formData.check_in)) /
+          (1000 * 60 * 60 * 24)
+      ),
       price: totalPrice,
     };
 
-    // Navigate to ReservationDetail component with reservation details
-    navigate("/reservation-detail", {
-      state: { reservation: reservationDetails },
-    });
+    try {
+      // Send reservation to the API
+      const response = await fetch(
+        "https://www.api.sanfelipe-hotel.com/api/reservations/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reservationDetails),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const createdReservation = {
+          ...reservationDetails,
+          id: data.reservation.id, // Set the reservation ID from the response
+          room_name: roomDetails.name,
+          user_name: user_data.name,
+          user_email: user_data.email,
+          user_phone: user_data.phone_number,
+        };
+
+        // Navigate to ReservationDetail component with reservation details
+        navigate("/reservation-detail", {
+          state: { reservation: createdReservation },
+        });
+      } else {
+        console.error("Error creating reservation:", data.message);
+        alert("Error al realizar la reservación. Inténtelo nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error connecting to API:", error);
+      alert("Error de conexión. Verifique su red e inténtelo nuevamente.");
+    }
   };
 
   return (
