@@ -13,9 +13,13 @@ const Reservations = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const user_data = JSON.parse(localStorage.getItem("userData"));
-
   useEffect(() => {
+    // Check if JWT token is present
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      navigate("/login"); // Redirect to login if no token
+    }
+
     // Redirect to Rooms page if no room data is passed
     if (!state?.roomId) {
       navigate("/rooms");
@@ -85,23 +89,48 @@ const Reservations = () => {
   };
 
   const confirmReservation = () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      navigate("/login"); // Ensure token is still present
+      return;
+    }
+
     const reservationDetails = {
       id: 1, // Replace with actual reservation ID
       room_name: roomDetails.name,
       room_id: roomDetails.id,
-      user_id: user_data.id,
-      user_name: user_data.name,
-      user_email: user_data.email,
-      user_phone: user_data.phone_number,
+      user_id: userData.id,
+      user_name: userData.name,
+      user_email: userData.email,
+      user_phone: userData.phone_number,
       check_in: formData.check_in,
       check_out: formData.check_out,
       price: totalPrice,
     };
 
-    // Navigate to ReservationDetail component with reservation details
-    navigate("/reservation-detail", {
-      state: { reservation: reservationDetails },
-    });
+    // Make API call to save reservation
+    fetch("https://www.api.sanfelipe-hotel.com/api/reservations/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(reservationDetails),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          alert("Error al realizar la reservación.");
+        } else {
+          // Navigate to ReservationDetail with reservation info
+          navigate("/reservation-detail", { state: { reservation: data } });
+        }
+      })
+      .catch((error) => {
+        console.error("Error al realizar la reservación:", error);
+      });
   };
 
   return (
